@@ -17,7 +17,7 @@ pub fn Color::black() -> Color { Color::{ r: 0, g: 0, b: 0, a: 1.0 } }
 pub fn Color::white() -> Color { Color::{ r: 255, g: 255, b: 255, a: 1.0 } }
 
 /// 转换为 CSS 颜色字符串
-pub fn to_css(self : Color) -> String {
+pub fn Color::to_css(self : Color) -> String {
   let r = self.r.to_string()
   let g = self.g.to_string()
   let b = self.b.to_string()

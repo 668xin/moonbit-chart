@@ -14,14 +14,15 @@ pub fn SvgDocument::new(width : Int, height : Int) -> SvgDocument {
 }
 
 /// 添加 SVG 元素
-pub fn add_element(self : SvgDocument, element : String) -> SvgDocument {
+pub fn SvgDocument::add_element(self : SvgDocument, element : String) -> SvgDocument {
   { ..self, elements: self.elements + [element] }
 }
 
 /// 渲染为 SVG 字符串
-pub fn render(self : SvgDocument) -> String {
-  let inner = self.elements.fold_left("", fn(acc, el) { acc + el + "\n" })
+pub fn SvgDocument::render(self : SvgDocument) -> String {
+  let inner = self.elements.fold(init="", fn(acc, el) { acc + el + "\n" })
   let width_str = self.width.to_string()
   let height_str = self.height.to_string()
-  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"" + width_str + "\" height=\"" + height_str + "\" xmlns=\"http://www.w3.org/2000/svg\">\n" + inner + "</svg>"
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"" + width_str + "\" height=\"" + height_str +
+    "\" xmlns=\"http://www.w3.org/2000/svg\">\n" + inner + "</svg>"
 }

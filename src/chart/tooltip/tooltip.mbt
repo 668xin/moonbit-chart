@@ -1,8 +1,7 @@
 /// Tooltip 组件
 /// 提供图表数据提示能力
 
-pub struct Tooltip {
-  // TODO: 实现 Tooltip
-}
+pub struct Tooltip {}
 
-pub fn Tooltip::new() -> Tooltip { {} }
+/// 创建 Tooltip 实例
+pub fn Tooltip::new() -> Tooltip { Tooltip::{} }

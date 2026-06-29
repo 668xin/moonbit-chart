@@ -1,5 +1,5 @@
 /// Demo 聚合入口
-pub fn main {
+fn main {
   println("=== xinxin.moonbit-chart Demos ===")
   println(demo_bar_chart())
   println(demo_line_chart())

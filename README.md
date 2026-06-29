@@ -75,11 +75,11 @@ let doc = doc.add_element("<rect x=\"10\" y=\"10\" width=\"100\" height=\"50\" f
 let svg_string = doc.render()
 ```
 
-| 方法 | 说明 |
-|------|------|
-| `SvgDocument::new(width, height)` | 创建指定宽高的 SVG 文档 |
-| `add_element(element)` | 添加 SVG 元素字符串 |
-| `render()` | 渲染为完整 SVG XML 字符串 |
+| 方法                              | 说明                      |
+| --------------------------------- | ------------------------- |
+| `SvgDocument::new(width, height)` | 创建指定宽高的 SVG 文档   |
+| `add_element(element)`            | 添加 SVG 元素字符串       |
+| `render()`                        | 渲染为完整 SVG XML 字符串 |
 
 #### Color（颜色工具）
 
@@ -90,11 +90,11 @@ let c = Color::red()
 let css = c.to_css()  // "rgba(255,0,0,1.0)"
 ```
 
-| 方法 | 说明 |
-|------|------|
-| `Color::{r, g, b, a}` | 创建 RGBA 颜色 |
-| `Color::red()` / `green()` / `blue()` / `black()` / `white()` | 预定义颜色 |
-| `to_css()` | 转为 CSS rgba 字符串 |
+| 方法                                                          | 说明                 |
+| ------------------------------------------------------------- | -------------------- |
+| `Color::{r, g, b, a}`                                         | 创建 RGBA 颜色       |
+| `Color::red()` / `green()` / `blue()` / `black()` / `white()` | 预定义颜色           |
+| `to_css()`                                                    | 转为 CSS rgba 字符串 |
 
 #### Theme（主题系统）
 
@@ -105,13 +105,13 @@ let light = get_light_theme()
 let dark  = get_dark_theme()
 ```
 
-| 属性 | 说明 |
-|------|------|
-| `mode` | 主题模式（Light / Dark） |
-| `background` | 背景色 |
-| `text_color` | 文字颜色 |
-| `grid_color` | 网格线颜色 |
-| `axis_color` | 坐标轴颜色 |
+| 属性         | 说明                     |
+| ------------ | ------------------------ |
+| `mode`       | 主题模式（Light / Dark） |
+| `background` | 背景色                   |
+| `text_color` | 文字颜色                 |
+| `grid_color` | 网格线颜色               |
+| `axis_color` | 坐标轴颜色               |
 
 #### Geometry（几何工具）
 
@@ -126,14 +126,14 @@ let r = Rect::new(0, 0, 800, 600)
 
 当前为骨架阶段，各图表组件提供以下统一接口（待实现）：
 
-| 组件 | 文件 | 说明 |
-|------|------|------|
-| `BarChart` | `chart/bar/` | 柱状图，支持单组/多组堆叠 |
-| `LineChart` | `chart/line/` | 折线图，支持单组/多组 |
-| `PieChart` | `chart/pie/` | 饼图 |
-| `RadarChart` | `chart/radar/` | 雷达图 |
-| `Tooltip` | `chart/tooltip/` | 数据提示 |
-| `Legend` | `chart/legend/` | 图例 |
+| 组件         | 文件             | 说明                      |
+| ------------ | ---------------- | ------------------------- |
+| `BarChart`   | `chart/bar/`     | 柱状图，支持单组/多组堆叠 |
+| `LineChart`  | `chart/line/`    | 折线图，支持单组/多组     |
+| `PieChart`   | `chart/pie/`     | 饼图                      |
+| `RadarChart` | `chart/radar/`   | 雷达图                    |
+| `Tooltip`    | `chart/tooltip/` | 数据提示                  |
+| `Legend`     | `chart/legend/`  | 图例                      |
 
 ### 第3层：命令行工具（src/cli/）
 
@@ -208,27 +208,3 @@ moon publish
 - **超大数值**：自动缩放坐标轴
 - **负数**：坐标轴自适应包含负值区间
 - **多组堆叠**：支持多组数据堆叠显示
-
-## 许可证
-
-MIT License
-
-Copyright (c) 2026
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.

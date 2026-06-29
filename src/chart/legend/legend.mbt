@@ -1,7 +1,6 @@
 /// 图例组件
 
-pub struct Legend {
-  // TODO: 实现图例
-}
+pub struct Legend {}
 
-pub fn Legend::new() -> Legend { {} }
+/// 创建图例实例
+pub fn Legend::new() -> Legend { Legend::{} }
