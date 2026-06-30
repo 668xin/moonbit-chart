@@ -1,5 +1,7 @@
 {
   "import": [
-    "moonbitlang/core/math"
+    "moonbitlang/core/math",
+    "moonbitlang/core/env",
+    "moonbitlang/core/builtin"
   ]
 }

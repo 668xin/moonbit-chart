@@ -212,9 +212,9 @@ fn render_line_x_labels(
 /// 渲染折线
 fn render_lines(
   chart : LineChart, y_scale : @lib.AxisScale,
-  plot_left : Double, plot_right : Double,
+  plot_left : Double, _plot_right : Double,
   plot_top : Double, plot_bottom : Double,
-  plot_width : Double, plot_height : Double
+  plot_width : Double, _plot_height : Double
 ) -> Array[@lib.SvgElement] {
   let mut elements : Array[@lib.SvgElement] = []
   let n_datasets = chart.datasets.length()

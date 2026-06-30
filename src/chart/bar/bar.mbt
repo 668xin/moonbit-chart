@@ -191,7 +191,7 @@ fn calc_max_value(datasets : Array[BarSeries], stacked : Bool) -> Double {
 fn render_bars(
   chart : BarChart, scale : @lib.AxisScale,
   cat_width : Double, group_offset : Double, bar_width : Double,
-  plot_left : Double, plot_bottom : Double, plot_top : Double, plot_height : Double
+  plot_left : Double, plot_bottom : Double, plot_top : Double, _plot_height : Double
 ) -> Array[@lib.SvgElement] {
   let mut elements : Array[@lib.SvgElement] = []
   let n_cats = chart.categories.length()

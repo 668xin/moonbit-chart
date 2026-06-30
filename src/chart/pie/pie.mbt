@@ -137,11 +137,11 @@ fn render_pie_slices(
   chart : PieChart, cx : Double, cy : Double, r : Double, total : Double
 ) -> Array[@lib.SvgElement] {
   let mut elements : Array[@lib.SvgElement] = []
-  let mut start_angle = -@math.pi / 2.0  // 从12点钟方向开始
+  let mut start_angle = -@math.PI / 2.0  // 从12点钟方向开始
   let mut i = 0
   while i < chart.data.length() {
     let slice = chart.data[i]
-    let sweep = (slice.value / total) * 2.0 * @math.pi
+    let sweep = (slice.value / total) * 2.0 * @math.PI
     let end_angle = start_angle + sweep
     let path_data = arc_path(cx, cy, r, start_angle, end_angle)
     let path = @lib.SvgPath::new(path_data, slice.color, "white", 1)
@@ -158,11 +158,11 @@ fn render_pie_labels(
 ) -> Array[@lib.SvgElement] {
   let mut elements : Array[@lib.SvgElement] = []
   let label_r = r * 0.65
-  let mut start_angle = -@math.pi / 2.0
+  let mut start_angle = -@math.PI / 2.0
   let mut i = 0
   while i < chart.data.length() {
     let slice = chart.data[i]
-    let sweep = (slice.value / total) * 2.0 * @math.pi
+    let sweep = (slice.value / total) * 2.0 * @math.PI
     let mid_angle = start_angle + sweep / 2.0
     let lx = cx + label_r * @math.cos(mid_angle)
     let ly = cy + label_r * @math.sin(mid_angle)

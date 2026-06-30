@@ -131,7 +131,7 @@ fn render_radar_grid(
     let mut pts : Array[(Double, Double)] = []
     let mut ai = 0
     while ai < n_axes {
-      let angle = ai.to_double() * angle_step - @math.pi / 2.0
+      let angle = ai.to_double() * angle_step - @math.PI / 2.0
       let (px, py) = get_axis_point(cx, cy, lr, angle)
       pts = pts + [(px, py)]
       ai = ai + 1
@@ -144,7 +144,7 @@ fn render_radar_grid(
   // 中心到顶点的辐射线
   let mut ai = 0
   while ai < n_axes {
-    let angle = ai.to_double() * angle_step - @math.pi / 2.0
+    let angle = ai.to_double() * angle_step - @math.PI / 2.0
     let (px, py) = get_axis_point(cx, cy, r, angle)
     let line = @lib.SvgLine::new(cx, cy, px, py, chart.theme.grid_color, 1)
     elements = elements + [@lib.SvgElement::LineElement(line)]
@@ -165,10 +165,10 @@ fn render_radar_axes(
 
   let mut i = 0
   while i < n_axes {
-    let angle = i.to_double() * angle_step - @math.pi / 2.0
+    let angle = i.to_double() * angle_step - @math.PI / 2.0
     let (lx, ly) = get_axis_point(cx, cy, label_r, angle)
-    let anchor = if angle < -@math.pi / 4.0 && angle > -3.0 * @math.pi / 4.0 { "middle" }
-      else if angle < @math.pi / 4.0 && angle > -@math.pi / 4.0 { "start" }
+    let anchor = if angle < -@math.PI / 4.0 && angle > -3.0 * @math.PI / 4.0 { "middle" }
+      else if angle < @math.PI / 4.0 && angle > -@math.PI / 4.0 { "start" }
       else { "end" }
     let text = @lib.SvgText::new(
       lx, ly + 4.0,
@@ -215,7 +215,7 @@ fn render_radar_data(
       let val = if ai < n_vals { ds.values[ai] } else { 0.0 }
       let ratio = val / max_val
       let pt_r = r * ratio
-      let angle = ai.to_double() * angle_step - @math.pi / 2.0
+      let angle = ai.to_double() * angle_step - @math.PI / 2.0
       let (px, py) = get_axis_point(cx, cy, pt_r, angle)
       pts = pts + [(px, py)]
       ai = ai + 1
