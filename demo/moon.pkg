@@ -1,5 +1,7 @@
 import {
   "xinxin/moonbit-chart/src/lib" @lib,
+  "xinxin/moonbit-chart/src/chart/bar" @bar,
+  "xinxin/moonbit-chart/src/chart/line" @line,
 }
 
 options(
