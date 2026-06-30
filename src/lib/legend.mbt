@@ -233,27 +233,21 @@ pub fn render_legend(
 
 // ---- LegendConfig builder 辅助方法（供外部包链式调用）----
 
-///
+///|
 /// 设置图例位置为顶部
-pub fn LegendConfig::with_top_position(
-  self : LegendConfig,
-) -> LegendConfig {
+pub fn LegendConfig::with_top_position(self : LegendConfig) -> LegendConfig {
   { ..self, position: Top }
 }
 
-///
+///|
 /// 设置图例位置为左侧
-pub fn LegendConfig::with_left_position(
-  self : LegendConfig,
-) -> LegendConfig {
+pub fn LegendConfig::with_left_position(self : LegendConfig) -> LegendConfig {
   { ..self, position: Left }
 }
 
-///
+///|
 /// 设置图例位置为右侧
-pub fn LegendConfig::with_right_position(
-  self : LegendConfig,
-) -> LegendConfig {
+pub fn LegendConfig::with_right_position(self : LegendConfig) -> LegendConfig {
   { ..self, position: Right }
 }
 
@@ -278,18 +272,21 @@ pub fn LegendConfig::with_font(
 
 // ==================== 测试 ====================
 
+///|
 test "legend_item_new" {
   let item = LegendItem::new("Series A", "#ff0000")
   assert_eq(item.label, "Series A")
   assert_eq(item.color, "#ff0000")
 }
 
+///|
 test "legend_config_default" {
   let c = default_legend_config()
   assert_eq(c.font_size, 11)
   assert_eq(c.item_width, 120.0)
 }
 
+///|
 test "legend_config_with_top" {
   let c = default_legend_config()
   let c2 = c.with_top_position()
@@ -298,6 +295,7 @@ test "legend_config_with_top" {
   assert_eq(h > 0.0, true)
 }
 
+///|
 test "legend_config_with_left" {
   let c = default_legend_config()
   let c2 = c.with_left_position()
@@ -305,6 +303,7 @@ test "legend_config_with_left" {
   assert_eq(w > 0.0, true)
 }
 
+///|
 test "legend_config_with_right" {
   let c = default_legend_config()
   let c2 = c.with_right_position()
@@ -312,6 +311,7 @@ test "legend_config_with_right" {
   assert_eq(w > 0.0, true)
 }
 
+///|
 test "legend_occupied_height_bottom" {
   let c = default_legend_config()
   let h = legend_occupied_height(c)

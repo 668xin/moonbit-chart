@@ -410,12 +410,14 @@ fn render_empty_radar_chart(
 
 // ==================== 测试 ====================
 
+///|
 test "radar_series_new" {
   let s = RadarSeries::new("Score", [80.0, 70.0, 90.0], "#4e79a7")
   assert_eq(s.label, "Score")
   assert_eq(s.values.length(), 3)
 }
 
+///|
 test "radar_chart_new" {
   let theme = @lib.Theme::new_light()
   let cats = ["A", "B", "C", "D"]
@@ -425,6 +427,7 @@ test "radar_chart_new" {
   assert_eq(chart.levels, 5)
 }
 
+///|
 test "radar_chart_render" {
   let theme = @lib.Theme::new_light()
   let cats = ["A", "B", "C", "D"]
@@ -435,6 +438,7 @@ test "radar_chart_render" {
   assert_eq(svg.contains("<polygon"), true)
 }
 
+///|
 test "radar_chart_render_empty" {
   let theme = @lib.Theme::new_light()
   let chart = RadarChart::new(400.0, 400.0, [], [], theme)

@@ -283,26 +283,31 @@ fn parse_double_parts(s : String, default : Double) -> Double {
 
 // ==================== 测试 ====================
 
+///|
 test "parse_double_int" {
   let v = parse_double_parts("42", 0.0)
   assert_eq(v, 42.0)
 }
 
+///|
 test "parse_double_negative" {
   let v = parse_double_parts("-3.14", 0.0)
   assert_eq(v < -3.0 && v > -3.2, true)
 }
 
+///|
 test "parse_double_positive_sign" {
   let v = parse_double_parts("+5", 0.0)
   assert_eq(v, 5.0)
 }
 
+///|
 test "parse_double_empty" {
   let v = parse_double_parts("", 99.0)
   assert_eq(v, 99.0)
 }
 
+///|
 test "parse_double_label_color_vals" {
   let ds = parse_dataset_row("Sales, #ff0000, 100, 200, 150")
   assert_eq(ds.label, "Sales")
@@ -311,28 +316,33 @@ test "parse_double_label_color_vals" {
   assert_eq(ds.values[0], 100.0)
 }
 
+///|
 test "parse_heading_single" {
   let blocks = parse_markdown_blocks("# Hello World")
   assert_eq(blocks.length(), 1)
   // 第一个是 Heading(1, "Hello World")
 }
 
+///|
 test "parse_heading_h2" {
   let blocks = parse_markdown_blocks("## Section Two")
   assert_eq(blocks.length(), 1)
 }
 
+///|
 test "parse_chart_block" {
   let md = "@chart: bar\n  title: Test\n  width: 500\n  height: 300\n  categories: A, B\n  dataset: S1, red, 10, 20\n@end"
   let blocks = parse_markdown_blocks(md)
   assert_eq(blocks.length() >= 1, true)
 }
 
+///|
 test "parse_paragraph" {
   let blocks = parse_markdown_blocks("This is a paragraph.")
   assert_eq(blocks.length(), 1)
 }
 
+///|
 test "parse_mixed_document" {
   let md = "# Title\n\nThis is a paragraph.\n\n@chart: pie\n  title: Pie\n  dataset: A, red, 30\n  dataset: B, blue, 70\n@end"
   let blocks = parse_markdown_blocks(md)

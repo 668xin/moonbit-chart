@@ -93,6 +93,7 @@ pub fn get_dark_theme() -> Theme {
 
 // ==================== 测试 ====================
 
+///|
 test "theme_light" {
   let t = Theme::new_light()
   assert_eq(t.background, "#ffffff")
@@ -100,6 +101,7 @@ test "theme_light" {
   assert_eq(t.palette.length(), 10)
 }
 
+///|
 test "theme_dark" {
   let t = Theme::new_dark()
   assert_eq(t.background, "#1e1e1e")
@@ -107,18 +109,21 @@ test "theme_dark" {
   assert_eq(t.palette.length(), 10)
 }
 
+///|
 test "theme_palette_color_first" {
   let t = Theme::new_light()
   let c = get_palette_color(t, 0)
   assert_eq(c, "#4e79a7")
 }
 
+///|
 test "theme_palette_color_wrap" {
   let t = Theme::new_light()
   let c = get_palette_color(t, 10)
   assert_eq(c, "#4e79a7")
 }
 
+///|
 test "theme_palette_color_mid" {
   let t = Theme::new_light()
   let c = get_palette_color(t, 5)

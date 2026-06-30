@@ -344,28 +344,38 @@ fn render_empty_pie_chart(w : Double, h : Double, theme : @lib.Theme) -> String 
 
 // ==================== 测试 ====================
 
+///|
 test "pie_slice_new" {
   let s = PieSlice::new("A", 30.0, "#ff0000")
   assert_eq(s.label, "A")
   assert_eq(s.value, 30.0)
 }
 
+///|
 test "pie_chart_new" {
   let theme = @lib.Theme::new_light()
-  let data = [PieSlice::new("A", 50.0, "#4e79a7"), PieSlice::new("B", 50.0, "#f28e2b")]
+  let data = [
+    PieSlice::new("A", 50.0, "#4e79a7"),
+    PieSlice::new("B", 50.0, "#f28e2b"),
+  ]
   let chart = PieChart::new(400.0, 400.0, data, theme)
   assert_eq(chart.radius > 0.0, true)
 }
 
+///|
 test "pie_chart_render" {
   let theme = @lib.Theme::new_light()
-  let data = [PieSlice::new("A", 30.0, "#4e79a7"), PieSlice::new("B", 70.0, "#f28e2b")]
+  let data = [
+    PieSlice::new("A", 30.0, "#4e79a7"),
+    PieSlice::new("B", 70.0, "#f28e2b"),
+  ]
   let chart = PieChart::new(400.0, 400.0, data, theme)
   let svg = chart.render()
   assert_eq(svg.has_prefix("<?xml"), true)
   assert_eq(svg.contains("<path"), true)
 }
 
+///|
 test "pie_chart_render_empty" {
   let theme = @lib.Theme::new_light()
   let chart = PieChart::new(400.0, 400.0, [], theme)
@@ -373,6 +383,7 @@ test "pie_chart_render_empty" {
   assert_eq(svg.contains("No data"), true)
 }
 
+///|
 test "pie_chart_zero_total" {
   let theme = @lib.Theme::new_light()
   let data = [PieSlice::new("A", 0.0, "#4e79a7")]

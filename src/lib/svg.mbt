@@ -52,6 +52,7 @@ pub fn SvgDocument::render(self : SvgDocument) -> String {
 
 // ==================== 测试 ====================
 
+///|
 test "svg_doc_new" {
   let doc = SvgDocument::new(600, 400)
   assert_eq(doc.width, 600)
@@ -59,6 +60,7 @@ test "svg_doc_new" {
   assert_eq(doc.elements.length(), 0)
 }
 
+///|
 test "svg_doc_add_element" {
   let doc = SvgDocument::new(100, 100)
   let r = SvgRect::new(0.0, 0.0, 50.0, 50.0, "red", "none", 0, 0.0, 0.0)
@@ -66,6 +68,7 @@ test "svg_doc_add_element" {
   assert_eq(d2.elements.length(), 1)
 }
 
+///|
 test "svg_doc_render_empty" {
   let doc = SvgDocument::new(100, 200)
   let s = doc.render()

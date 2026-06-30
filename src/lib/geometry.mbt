@@ -31,12 +31,14 @@ pub fn Rect::new(x : Int, y : Int, width : Int, height : Int) -> Rect {
 
 // ==================== 测试 ====================
 
+///|
 test "point_new" {
   let p = Point::new(10, 20)
   assert_eq(p.x, 10)
   assert_eq(p.y, 20)
 }
 
+///|
 test "rect_new" {
   let r = Rect::new(0, 0, 100, 200)
   assert_eq(r.x, 0)

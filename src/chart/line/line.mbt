@@ -440,12 +440,14 @@ fn render_empty_line_chart(
 
 // ==================== 测试 ====================
 
+///|
 test "datapoint_new" {
   let p = DataPoint::new(0.0, 100.0)
   assert_eq(p.x, 0.0)
   assert_eq(p.y, 100.0)
 }
 
+///|
 test "line_series_new" {
   let pts = [DataPoint::new(0.0, 10.0), DataPoint::new(1.0, 20.0)]
   let s = LineSeries::new("Series 1", pts, "#4e79a7")
@@ -453,6 +455,7 @@ test "line_series_new" {
   assert_eq(s.points.length(), 2)
 }
 
+///|
 test "line_chart_new" {
   let theme = @lib.Theme::new_light()
   let pts = [DataPoint::new(0.0, 10.0), DataPoint::new(1.0, 20.0)]
@@ -462,9 +465,14 @@ test "line_chart_new" {
   assert_eq(chart.show_points, true)
 }
 
+///|
 test "line_chart_render" {
   let theme = @lib.Theme::new_light()
-  let pts = [DataPoint::new(0.0, 10.0), DataPoint::new(1.0, 25.0), DataPoint::new(2.0, 15.0)]
+  let pts = [
+    DataPoint::new(0.0, 10.0),
+    DataPoint::new(1.0, 25.0),
+    DataPoint::new(2.0, 15.0),
+  ]
   let s = LineSeries::new("S1", pts, "#4e79a7")
   let chart = LineChart::new(600.0, 400.0, [s], theme)
   let svg = chart.render()
@@ -472,6 +480,7 @@ test "line_chart_render" {
   assert_eq(svg.contains("<polyline"), true)
 }
 
+///|
 test "line_chart_render_empty" {
   let theme = @lib.Theme::new_light()
   let chart = LineChart::new(600.0, 400.0, [], theme)

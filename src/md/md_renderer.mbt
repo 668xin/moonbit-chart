@@ -105,36 +105,43 @@ fn find_next(text : String, start : Int, pattern : String) -> Int {
 
 // ==================== 测试 ====================
 
+///|
 test "render_inline_plain" {
   let r = render_inline("Hello World")
   assert_eq(r, "Hello World")
 }
 
+///|
 test "render_inline_bold" {
   let r = render_inline("This is **bold** text")
   assert_eq(r.contains("<strong>bold</strong>"), true)
 }
 
+///|
 test "render_inline_italic" {
   let r = render_inline("This is *italic* text")
   assert_eq(r.contains("<em>italic</em>"), true)
 }
 
+///|
 test "render_inline_code" {
   let r = render_inline("Use `moon build` to compile")
   assert_eq(r.contains("<code>moon build</code>"), true)
 }
 
+///|
 test "render_inline_link" {
   let r = render_inline("See [MoonBit](https://moonbitlang.com)")
   assert_eq(r.contains("<a href=\"https://moonbitlang.com\">MoonBit</a>"), true)
 }
 
+///|
 test "find_next_basic" {
   let i = find_next("hello **world**", 0, "**")
   assert_eq(i, 6)
 }
 
+///|
 test "find_next_not_found" {
   let i = find_next("hello world", 0, "**")
   assert_eq(i, -1)

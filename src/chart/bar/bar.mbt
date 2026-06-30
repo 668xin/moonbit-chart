@@ -407,6 +407,7 @@ fn build_bar_legend_items(chart : BarChart) -> Array[@lib.LegendItem] {
 
 // ==================== 测试 ====================
 
+///|
 test "bar_series_new" {
   let s = BarSeries::new("Sales", [100.0, 200.0, 150.0], "#4e79a7")
   assert_eq(s.label, "Sales")
@@ -414,6 +415,7 @@ test "bar_series_new" {
   assert_eq(s.values[0], 100.0)
 }
 
+///|
 test "bar_chart_new" {
   let theme = @lib.Theme::new_light()
   let cats = ["Jan", "Feb", "Mar"]
@@ -423,6 +425,7 @@ test "bar_chart_new" {
   assert_eq(chart.categories.length(), 3)
 }
 
+///|
 test "bar_chart_render_has_svg" {
   let theme = @lib.Theme::new_light()
   let cats = ["A", "B"]
@@ -433,6 +436,7 @@ test "bar_chart_render_has_svg" {
   assert_eq(svg.contains("<rect"), true)
 }
 
+///|
 test "bar_chart_render_empty" {
   let theme = @lib.Theme::new_light()
   let chart = BarChart::new(600.0, 400.0, [], [], theme, false)
@@ -440,6 +444,7 @@ test "bar_chart_render_empty" {
   assert_eq(svg.contains("No data"), true)
 }
 
+///|
 test "bar_chart_stacked" {
   let theme = @lib.Theme::new_light()
   let cats = ["A", "B"]
@@ -450,9 +455,17 @@ test "bar_chart_stacked" {
   assert_eq(svg.has_prefix("<?xml"), true)
 }
 
+///|
 test "bar_chart_with_title" {
   let theme = @lib.Theme::new_light()
-  let chart = BarChart::new(600.0, 400.0, ["A"], [BarSeries::new("S", [10.0], "red")], theme, false)
+  let chart = BarChart::new(
+    600.0,
+    400.0,
+    ["A"],
+    [BarSeries::new("S", [10.0], "red")],
+    theme,
+    false,
+  )
   let c2 = chart.with_title("My Chart")
   assert_eq(c2.title, "My Chart")
 }

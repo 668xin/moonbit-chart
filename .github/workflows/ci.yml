@@ -7,10 +7,44 @@ on:
     branches: [master, main]
 
 jobs:
-  build-and-test:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: hustcer/setup-moonbit@v1
-      - run: moon build
-      - run: moon test
+
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+
+      - name: MoonBit Version
+        run: moon version --all
+
+      - name: Moon Check
+        run: moon check
+
+      - name: Moon Format Check
+        run: moon fmt --check
+
+      - name: Moon Info
+        run: moon info
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+
+      - name: Moon Build
+        run: moon build
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+
+      - name: Moon Test
+        run: moon test

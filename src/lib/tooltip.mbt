@@ -110,12 +110,14 @@ pub fn render_simple_tooltip(
 
 // ==================== 测试 ====================
 
+///|
 test "tooltip_config_default" {
   let c = default_tooltip_config()
   assert_eq(c.font_size, 11)
   assert_eq(c.text_color, "#ffffff")
 }
 
+///|
 test "tooltip_with_title_wraps" {
   let r = SvgRect::new(0.0, 0.0, 10.0, 10.0, "red", "none", 0, 0.0, 0.0)
   let elem = RectElement(r)
@@ -126,6 +128,7 @@ test "tooltip_with_title_wraps" {
   assert_eq(s.contains("Hello"), true)
 }
 
+///|
 test "tooltip_simple_box" {
   let c = default_tooltip_config()
   let box_elem = render_simple_tooltip(50.0, 50.0, "Item: 100", c)
