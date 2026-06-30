@@ -1,0 +1,7 @@
+import {
+  "xinxin/moonbit-chart/src/lib" @lib,
+}
+
+options(
+  "is-main": true,
+)

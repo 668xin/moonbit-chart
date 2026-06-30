@@ -1,8 +1,3 @@
 {
-  "import": [
-    "xinxin/moonbit-chart/src/lib/render",
-    "xinxin/moonbit-chart/src/lib/color",
-    "xinxin/moonbit-chart/src/lib/geometry",
-    "xinxin/moonbit-chart/src/lib/theme"
-  ]
+  "import": []
 }

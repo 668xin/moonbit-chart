@@ -1,7 +1,0 @@
-{
-  "is-main": true,
-  "import": [
-    "xinxin/moonbit-chart/src/chart",
-    "xinxin/moonbit-chart/src/lib"
-  ]
-}
