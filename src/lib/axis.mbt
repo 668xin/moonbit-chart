@@ -1,5 +1,6 @@
 /// 坐标轴与刻度工具模块
 /// 提供坐标轴刻度计算、网格线渲染、标签渲染等基础能力
+/// 支持 AxisConfig 自定义配置
 
 /// 坐标轴刻度计算结果
 pub struct AxisScale {
@@ -122,4 +123,108 @@ pub fn render_chart_title(
   TextElement(
     SvgText::new(width / 2.0, y, title, font_size, color, "middle", font_family)
   )
+}
+
+// ==================== AxisConfig 坐标轴自定义配置 ====================
+
+/// 坐标轴自定义配置
+pub struct AxisConfig {
+  // Y 轴
+  y_show_grid : Bool
+  y_show_labels : Bool
+  y_label_size : Int
+  y_label_color : String
+  y_grid_color : String
+  y_grid_width : Double
+  y_axis_color : String
+  y_axis_width : Double
+  y_tick_length : Double
+  // X 轴
+  x_show_labels : Bool
+  x_label_size : Int
+  x_label_color : String
+  x_axis_color : String
+  x_axis_width : Double
+  x_tick_length : Double
+}
+
+/// 创建默认 AxisConfig
+pub fn default_axis_config() -> AxisConfig {
+  AxisConfig::{
+    y_show_grid: true, y_show_labels: true,
+    y_label_size: 12, y_label_color: "#666666",
+    y_grid_color: "#e0e0e0", y_grid_width: 1.0,
+    y_axis_color: "#999999", y_axis_width: 1.0, y_tick_length: 4.0,
+    x_show_labels: true, x_label_size: 12, x_label_color: "#666666",
+    x_axis_color: "#999999", x_axis_width: 1.0, x_tick_length: 4.0
+  }
+}
+
+/// 使用 AxisConfig 渲染 Y 轴（网格线 + 标签 + 轴线）
+pub fn render_y_axis(
+  config : AxisConfig,
+  scale : AxisScale,
+  plot_left : Double, plot_right : Double,
+  plot_top : Double, plot_bottom : Double,
+  font_family : String
+) -> Array[SvgElement] {
+  let mut elements : Array[SvgElement] = []
+
+  // 网格线
+  if config.y_show_grid {
+    let grid = render_hgrid(scale, plot_left, plot_right, plot_top, plot_bottom, config.y_grid_color)
+    elements = elements + grid
+  }
+
+  // Y轴标签
+  if config.y_show_labels {
+    let labels = render_y_labels(scale, plot_left, plot_top, plot_bottom, config.y_label_color, config.y_label_size, font_family)
+    elements = elements + labels
+  }
+
+  // Y轴轴线
+  let y_axis = SvgLine::new(plot_left, plot_top, plot_left, plot_bottom, config.y_axis_color, config.y_axis_width.to_int())
+  elements = elements + [LineElement(y_axis)]
+
+  elements
+}
+
+/// 使用 AxisConfig 渲染 X 轴（标签 + 轴线）
+pub fn render_x_axis(
+  config : AxisConfig,
+  categories : Array[String],
+  plot_left : Double, plot_right : Double,
+  plot_bottom : Double,
+  font_family : String
+) -> Array[SvgElement] {
+  let mut elements : Array[SvgElement] = []
+
+  // X轴标签
+  if config.x_show_labels {
+    let labels = render_x_labels(categories, plot_left, plot_right, plot_bottom, config.x_label_color, config.x_label_size, font_family)
+    elements = elements + labels
+  }
+
+  // X轴轴线
+  let x_axis = SvgLine::new(plot_left, plot_bottom, plot_right, plot_bottom, config.x_axis_color, config.x_axis_width.to_int())
+  elements = elements + [LineElement(x_axis)]
+
+  elements
+}
+
+// ---- AxisConfig builder 辅助方法（供外部包链式调用）----
+
+/// 设置网格显示和颜色
+pub fn AxisConfig::with_grid(self : AxisConfig, show : Bool, color : String) -> AxisConfig {
+  { ..self, y_show_grid: show, y_grid_color: color }
+}
+
+/// 设置 Y 轴标签和轴线颜色
+pub fn AxisConfig::with_y_color(self : AxisConfig, label_color : String, axis_color : String) -> AxisConfig {
+  { ..self, y_label_color: label_color, y_axis_color: axis_color }
+}
+
+/// 设置 X 轴标签和轴线颜色
+pub fn AxisConfig::with_x_color(self : AxisConfig, label_color : String, axis_color : String) -> AxisConfig {
+  { ..self, x_label_color: label_color, x_axis_color: axis_color }
 }

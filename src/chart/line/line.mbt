@@ -95,9 +95,8 @@ pub fn LineChart::render(self : LineChart) -> String {
   // 计算 X 范围（取索引作为分类值）- 基于最多点的数据集
   let max_pts = find_max_points(self.datasets)
   // 计算 Y 范围
-  let (y_min, y_max) = find_y_range(all_pts)
+  let (_y_min, y_max) = find_y_range(all_pts)
   let y_scale = @lib.calc_scale(0.0, y_max, 5)
-  let y_zero = @lib.scale_to_y(0.0, y_scale, plot_top, plot_bottom)
 
   let mut elements : Array[@lib.SvgElement] = []
 
@@ -111,34 +110,35 @@ pub fn LineChart::render(self : LineChart) -> String {
     elements = elements + [t]
   }
 
-  // 网格线
-  if self.show_grid {
-    let grid = @lib.render_hgrid(y_scale, plot_left, plot_right, plot_top, plot_bottom, self.theme.grid_color)
-    elements = elements + grid
-  }
-
-  // Y轴标签
-  let y_labels = @lib.render_y_labels(y_scale, plot_left, plot_top, plot_bottom, self.theme.axis_color, 12, self.theme.font_family)
-  elements = elements + y_labels
+  // 使用共享 AxisConfig 渲染坐标轴
+  let axis_config = @lib.default_axis_config()
+  let c2 = axis_config
+    .with_grid(self.show_grid, self.theme.grid_color)
+    .with_y_color(self.theme.axis_color, self.theme.axis_color)
+    .with_x_color(self.theme.axis_color, self.theme.axis_color)
+  let y_axis_elems = @lib.render_y_axis(c2, y_scale, plot_left, plot_right, plot_top, plot_bottom, self.theme.font_family)
+  elements = elements + y_axis_elems
 
   // X轴标签（基于索引）
   let max_n = max_pts
   let x_labels = render_line_x_labels(max_n, plot_left, plot_right, plot_bottom, self.theme.axis_color, 12, self.theme.font_family)
   elements = elements + x_labels
 
-  // 坐标轴线
-  let x_axis = @lib.SvgLine::new(plot_left, plot_bottom, plot_right, plot_bottom, self.theme.axis_color, 1)
-  elements = elements + [@lib.SvgElement::LineElement(x_axis)]
-  // Y轴零线
-  let y_line = @lib.SvgLine::new(plot_left, y_zero, plot_right, y_zero, self.theme.axis_color, 1)
-  elements = elements + [@lib.SvgElement::LineElement(y_line)]
+  // X轴轴线
+  let x_axis_line = @lib.SvgLine::new(plot_left, plot_bottom, plot_right, plot_bottom, self.theme.axis_color, 1)
+  elements = elements + [@lib.SvgElement::LineElement(x_axis_line)]
 
   // 绘制折线
   elements = elements + render_lines(self, y_scale, plot_left, plot_right, plot_top, plot_bottom, plot_width, plot_height)
 
-  // 图例
+  // 图例（使用共享 Legend 组件）
   if self.show_legend && n_datasets > 1 {
-    let legend = render_line_legend(self)
+    let legend_items = build_line_legend_items(self)
+    let legend_config = @lib.default_legend_config()
+    let lc2 = legend_config
+      .with_text_color(self.theme.legend_color)
+      .with_font(self.theme.font_family, legend_config.font_size)
+    let legend = @lib.render_legend(lc2, legend_items, self.width, self.height, plot_left, plot_right, plot_top, plot_bottom)
     elements = elements + legend
   }
 
@@ -261,29 +261,16 @@ fn render_lines(
   elements
 }
 
-/// 渲染折线图图例
-fn render_line_legend(chart : LineChart) -> Array[@lib.SvgElement] {
-  let mut elems : Array[@lib.SvgElement] = []
-  let n = chart.datasets.length()
-  let legend_y = chart.height - 8.0
-  let total_width = n.to_double() * 120.0
-  let start_x = (chart.width - total_width) / 2.0
-
+/// 构建折线图图例数据项
+fn build_line_legend_items(chart : LineChart) -> Array[@lib.LegendItem] {
+  let mut items : Array[@lib.LegendItem] = []
   let mut i = 0
-  while i < n {
+  while i < chart.datasets.length() {
     let ds = chart.datasets[i]
-    let lx = start_x + i.to_double() * 120.0
-    // 图例线标记
-    let line = @lib.SvgLine::new(lx, legend_y - 4.0, lx + 14.0, legend_y - 4.0, ds.color, 2)
-    let text = @lib.SvgText::new(
-      lx + 18.0, legend_y,
-      ds.label, 11, chart.theme.legend_color, "start", chart.theme.font_family
-    )
-    elems = elems + [@lib.SvgElement::LineElement(line)]
-    elems = elems + [@lib.SvgElement::TextElement(text)]
+    items = items + [@lib.LegendItem::new(ds.label, ds.color)]
     i = i + 1
   }
-  elems
+  items
 }
 
 /// 渲染空折线图

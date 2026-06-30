@@ -108,32 +108,28 @@ pub fn BarChart::render(self : BarChart) -> String {
     elements = elements + [t]
   }
 
-  // 网格线
-  if self.show_grid {
-    let grid = @lib.render_hgrid(scale, plot_left, plot_right, plot_top, plot_bottom, self.theme.grid_color)
-    elements = elements + grid
-  }
-
-  // Y轴标签
-  let y_labels = @lib.render_y_labels(scale, plot_left, plot_top, plot_bottom, self.theme.axis_color, 12, self.theme.font_family)
-  elements = elements + y_labels
-
-  // X轴标签
-  let x_labels = @lib.render_x_labels(self.categories, plot_left, plot_right, plot_bottom, self.theme.axis_color, 12, self.theme.font_family)
-  elements = elements + x_labels
-
-  // 坐标轴线
-  let x_axis = @lib.SvgLine::new(plot_left, plot_bottom, plot_right, plot_bottom, self.theme.axis_color, 1)
-  elements = elements + [@lib.SvgElement::LineElement(x_axis)]
-  let y_axis = @lib.SvgLine::new(plot_left, plot_top, plot_left, plot_bottom, self.theme.axis_color, 1)
-  elements = elements + [@lib.SvgElement::LineElement(y_axis)]
+  // 使用共享 AxisConfig 渲染坐标轴
+  let axis_config = @lib.default_axis_config()
+  let c2 = axis_config
+    .with_grid(self.show_grid, self.theme.grid_color)
+    .with_y_color(self.theme.axis_color, self.theme.axis_color)
+    .with_x_color(self.theme.axis_color, self.theme.axis_color)
+  let y_axis_elems = @lib.render_y_axis(c2, scale, plot_left, plot_right, plot_top, plot_bottom, self.theme.font_family)
+  elements = elements + y_axis_elems
+  let x_axis_elems = @lib.render_x_axis(c2, self.categories, plot_left, plot_right, plot_bottom, self.theme.font_family)
+  elements = elements + x_axis_elems
 
   // 绘制柱子
   elements = elements + render_bars(self, scale, cat_width, group_offset, bar_width, plot_left, plot_bottom, plot_top, plot_height)
 
-  // 图例
+  // 图例（使用共享 Legend 组件）
   if self.show_legend && n_datasets > 1 {
-    let legend = render_bar_legend(self)
+    let legend_items = build_bar_legend_items(self)
+    let legend_config = @lib.default_legend_config()
+    let lc2 = legend_config
+      .with_text_color(self.theme.legend_color)
+      .with_font(self.theme.font_family, legend_config.font_size)
+    let legend = @lib.render_legend(lc2, legend_items, self.width, self.height, plot_left, plot_right, plot_top, plot_bottom)
     elements = elements + legend
   }
 
@@ -250,26 +246,14 @@ fn render_bars(
   elements
 }
 
-/// 渲染柱状图图例
-fn render_bar_legend(chart : BarChart) -> Array[@lib.SvgElement] {
-  let mut elems : Array[@lib.SvgElement] = []
-  let n = chart.datasets.length()
-  let legend_y = chart.height - 8.0
-  let total_width = n.to_double() * 120.0
-  let start_x = (chart.width - total_width) / 2.0
-
+/// 构建柱状图图例数据项
+fn build_bar_legend_items(chart : BarChart) -> Array[@lib.LegendItem] {
+  let mut items : Array[@lib.LegendItem] = []
   let mut i = 0
-  while i < n {
+  while i < chart.datasets.length() {
     let ds = chart.datasets[i]
-    let lx = start_x + i.to_double() * 120.0
-    let rect = @lib.SvgRect::new(lx, legend_y - 10.0, 12.0, 12.0, ds.color, "none", 0, 0.0, 0.0)
-    let text = @lib.SvgText::new(
-      lx + 16.0, legend_y,
-      ds.label, 11, chart.theme.legend_color, "start", chart.theme.font_family
-    )
-    elems = elems + [@lib.SvgElement::RectElement(rect)]
-    elems = elems + [@lib.SvgElement::TextElement(text)]
+    items = items + [@lib.LegendItem::new(ds.label, ds.color)]
     i = i + 1
   }
-  elems
+  items
 }
