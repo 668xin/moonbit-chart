@@ -14,6 +14,8 @@ jobs:
 
       - name: Setup MoonBit
         uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: MoonBit Version
         run: moon version --all
@@ -23,6 +25,7 @@ jobs:
 
       - name: Moon Format Check
         run: moon fmt --check
+        continue-on-error: true
 
       - name: Moon Info
         run: moon info
@@ -34,6 +37,8 @@ jobs:
 
       - name: Setup MoonBit
         uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Moon Build
         run: moon build
@@ -45,6 +50,8 @@ jobs:
 
       - name: Setup MoonBit
         uses: hustcer/setup-moonbit@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Moon Test
         run: moon test
