@@ -25,7 +25,6 @@ jobs:
 
       - name: Moon Format Check
         run: moon fmt --check
-        continue-on-error: true
 
       - name: Moon Info
         run: moon info

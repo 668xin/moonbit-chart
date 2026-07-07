@@ -10,4 +10,13 @@ repository = "https://github.com/668xin/moonbit-chart"
 
 readme = "README.md"
 
-keywords = [ "chart", "visualization", "svg", "moonbit", "bar", "line", "pie", "radar" ]
+keywords = [
+  "chart",
+  "visualization",
+  "svg",
+  "moonbit",
+  "bar",
+  "line",
+  "pie",
+  "radar",
+]
