@@ -245,7 +245,10 @@ fn render_empty_chart(w : Double, h : Double, theme : @lib.Theme) -> String {
 
 ///|
 /// 计算数据集范围 (min, max)
-fn calc_data_range(datasets : Array[BarSeries], stacked : Bool) -> (Double, Double) {
+fn calc_data_range(
+  datasets : Array[BarSeries],
+  stacked : Bool,
+) -> (Double, Double) {
   if datasets.length() == 0 {
     return (0.0, 1.0)
   }
@@ -560,7 +563,7 @@ test "bar_chart_canvas_bounds_regression" {
   let s = BarSeries::new("S1", [100.0, 200.0, 50.0], "#4e79a7")
   let chart = BarChart::new(500.0, 350.0, cats, [s], theme, false)
   let svg = chart.render()
-  let (w, h) = @lib.extract_svg_size(svg)
+  let w = @lib.extract_svg_size(svg).0
   let xs = @lib.extract_rect_xs(svg)
   if xs.length() > 0 {
     let mut ok = true

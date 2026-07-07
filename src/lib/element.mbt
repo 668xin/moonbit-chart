@@ -490,7 +490,9 @@ pub fn extract_polyline_xs(svg : String) -> Array[Double] {
       if val_end > val_start {
         let pts_str = s[val_start:val_end].to_owned()
         // 解析 "x1,y1 x2,y2 ..."
-        let coord_parts : Array[StringView] = [ for p in pts_str.split(" ") => p ]
+        let coord_parts : Array[StringView] = [
+          for p in pts_str.split(" ") => p
+        ]
         let mut j = 0
         while j < coord_parts.length() {
           let coord = coord_parts[j].to_owned()
