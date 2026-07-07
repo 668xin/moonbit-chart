@@ -1,3 +1,6 @@
 _build/
 .trae/
 output.html
+output_raw.txt
+.raw_svg_output.txt
+gen_html.ps1

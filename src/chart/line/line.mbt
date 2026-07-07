@@ -357,9 +357,7 @@ fn render_lines(
     let mut mapped_pts : Array[(Double, Double)] = []
     let mut pi = 0
     while pi < n_pts {
-      let raw_x = pts[pi].x
-      // 用实际 x 值在 0..max_n 范围内映射
-      let px = plot_left + raw_x * x_step
+      let px = plot_left + pi.to_double() * x_step
       let py = @lib.scale_to_y(pts[pi].y, y_scale, plot_top, plot_bottom)
       mapped_pts = mapped_pts + [(px, py)]
       pi = pi + 1
@@ -486,4 +484,59 @@ test "line_chart_render_empty" {
   let chart = LineChart::new(600.0, 400.0, [], theme)
   let svg = chart.render()
   assert_eq(svg.contains("No data"), true)
+}
+
+// ==================== 回归测试 ====================
+
+///|
+/// 折线图画布边界回归测试：验证所有 polyline 点的 x 坐标不超出画布
+test "line_chart_bounds_regression" {
+  let theme = @lib.Theme::new_light()
+  // 使用类似之前 bug 的数据：x 值为 0,2,4,6,8,10（超出数据集大小映射）
+  let pts = [
+    LineSeries::new("S1", [DataPoint::new(0.0, 10.0), DataPoint::new(1.0, 25.0),
+      DataPoint::new(2.0, 15.0)], "#4e79a7"),
+  ]
+  let chart = LineChart::new(500.0, 350.0, pts, theme)
+  let svg = chart.render()
+  let xs = @lib.extract_polyline_xs(svg)
+  if xs.length() > 0 {
+    let mut all_in_bounds = true
+    let mut i = 0
+    while i < xs.length() {
+      if xs[i] < 0.0 || xs[i] > 500.0 {
+        all_in_bounds = false
+      }
+      i = i + 1
+    }
+    assert_eq(all_in_bounds, true)
+  }
+  // 验证 SVG 尺寸正确
+  let (w, h) = @lib.extract_svg_size(svg)
+  assert_eq(w, 500.0)
+  assert_eq(h, 350.0)
+}
+
+///|
+/// 多折线画布边界回归测试
+test "line_chart_multi_bounds_regression" {
+  let theme = @lib.Theme::new_light()
+  let pts = [DataPoint::new(0.0, 100.0), DataPoint::new(2.0, 200.0),
+    DataPoint::new(4.0, 150.0), DataPoint::new(6.0, 300.0),
+    DataPoint::new(8.0, 250.0), DataPoint::new(10.0, 180.0)]
+  let s1 = LineSeries::new("S1", pts, "#4e79a7")
+  let chart = LineChart::new(500.0, 350.0, [s1], theme)
+  let svg = chart.render()
+  let xs = @lib.extract_polyline_xs(svg)
+  if xs.length() > 0 {
+    let mut ok = true
+    let mut i = 0
+    while i < xs.length() {
+      if xs[i] < 0.0 || xs[i] > 500.0 {
+        ok = false
+      }
+      i = i + 1
+    }
+    assert_eq(ok, true)
+  }
 }

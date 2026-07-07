@@ -74,3 +74,42 @@ test "md_converter_convert_chart_to_svg" {
   let html = converter.convert(md)
   assert_eq(html.contains("<svg"), true)
 }
+
+// ==================== 回归测试 ====================
+
+///|
+/// CLI 输出回归测试：验证 HTML 页面结构完整性
+test "html_output_structure_regression" {
+  let converter = MdConverter::new()
+  let md = "# Sales Report\n\nThis report shows Q1 sales.\n\n@chart: bar\n  title: Q1 Sales\n  categories: Jan, Feb, Mar\n  dataset: Revenue, #4e79a7, 100, 200, 150\n@end\n\n---\n\n@chart: line\n  title: Q1 Trend\n  categories: Jan, Feb, Mar\n  dataset: Growth, #f28e2b, 10, 25, 18\n@end"
+  let html = converter.convert(md)
+  // HTML 基本结构
+  assert_eq(html.has_prefix("<!DOCTYPE html>"), true)
+  assert_eq(html.contains("<html"), true)
+  assert_eq(html.contains("<head>"), true)
+  assert_eq(html.contains("<body>"), true)
+  // 标题渲染
+  assert_eq(html.contains("<h1>Sales Report</h1>"), true)
+  // 段落渲染
+  assert_eq(html.contains("<p>This report shows Q1 sales.</p>"), true)
+  // 两个图表都应渲染为 SVG
+  assert_eq(html.contains("<svg"), true)
+  // 水平线渲染
+  assert_eq(html.contains("<hr"), true)
+}
+
+///|
+/// 空数据和边界情况回归测试
+test "html_output_edge_cases_regression" {
+  let converter = MdConverter::new()
+  // 空内容
+  let html1 = converter.convert("")
+  assert_eq(html1.has_prefix("<!DOCTYPE html>"), true)
+  // 纯 Markdown 文本（无图表）
+  let html2 = converter.convert("# Title\n\nSome text")
+  assert_eq(html2.contains("<h1>Title</h1>"), true)
+  assert_eq(html2.contains("<p>Some text</p>"), true)
+  // 无效图表配置应优雅降级，显示无数据 SVG
+  let html3 = converter.convert("@chart: unknown\n@end")
+  assert_eq(html3.contains("No data"), true)
+}

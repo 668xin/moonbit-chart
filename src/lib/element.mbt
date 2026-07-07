@@ -345,6 +345,210 @@ pub fn render_svg_element(elem : SvgElement) -> String {
   }
 }
 
+// ==================== SVG 解析辅助函数（回归测试用）====================
+
+///|
+/// 在字符串 text 中从 start 位置开始查找 pattern，返回匹配位置或 -1
+fn svg_find(text : String, start : Int, pattern : String) -> Int {
+  let tlen = text.length()
+  let plen = pattern.length()
+  if plen == 0 {
+    return -1
+  }
+  let mut i = start
+  while i + plen <= tlen {
+    let mut matched = true
+    let mut j = 0
+    while j < plen {
+      if text.code_unit_at(i + j) != pattern.code_unit_at(j) {
+        matched = false
+        break
+      }
+      j = j + 1
+    }
+    if matched {
+      return i
+    }
+    i = i + 1
+  }
+  -1
+}
+
+///|
+/// 解析字符串中的浮点数（支持负号、整数/小数）
+fn svg_parse_double(s : String) -> Double {
+  let len = s.length()
+  if len == 0 {
+    return 0.0
+  }
+  let mut i = 0
+  let mut sign = 1.0
+  if i < len {
+    let c = s.code_unit_at(i).to_int()
+    if c == 45 {
+      sign = -1.0
+      i = i + 1
+    } else if c == 43 {
+      i = i + 1
+    }
+  }
+  let mut int_part = 0.0
+  let mut has_digit = false
+  while i < len {
+    let c = s.code_unit_at(i).to_int()
+    if 48 <= c && c <= 57 {
+      int_part = int_part * 10.0 + (c - 48).to_double()
+      has_digit = true
+      i = i + 1
+    } else if c == 46 {
+      i = i + 1
+      break
+    } else {
+      break
+    }
+  }
+  let mut frac_part = 0.0
+  let mut frac_div = 1.0
+  while i < len {
+    let c = s.code_unit_at(i).to_int()
+    if 48 <= c && c <= 57 {
+      frac_part = frac_part * 10.0 + (c - 48).to_double()
+      frac_div = frac_div * 10.0
+      has_digit = true
+      i = i + 1
+    } else {
+      break
+    }
+  }
+  if !has_digit {
+    return 0.0
+  }
+  sign * (int_part + frac_part / frac_div)
+}
+
+///|
+/// 提取两个引号之间的属性值
+fn extract_attr_value(text : String, attr_name : String) -> Array[Double] {
+  let mut result : Array[Double] = []
+  let tag_len = attr_name.length()
+  let mut pos = 0
+  let tlen = text.length()
+  // 先找属性名标签
+  while pos < tlen {
+    let tag_start = svg_find(text, pos, attr_name)
+    if tag_start == -1 {
+      break
+    }
+    let val_start = tag_start + tag_len
+    // 找结束引号
+    let val_end_pos = svg_find(text, val_start, "\"")
+    if val_end_pos == -1 {
+      break
+    }
+    if val_end_pos > val_start {
+      let val_s = text[val_start:val_end_pos].to_owned()
+      result = result + [svg_parse_double(val_s)]
+    }
+    pos = val_end_pos + 1
+  }
+  result
+}
+
+///|
+/// 从 SVG 字符串中提取所有 `<rect` 元素的 height 属性值
+pub fn extract_rect_heights(svg : String) -> Array[Double] {
+  // 先拆出每个 <rect...> 片段
+  let rect_parts : Array[StringView] = [ for p in svg.split("<rect") => p ]
+  let mut heights : Array[Double] = []
+  let mut i = 1
+  while i < rect_parts.length() {
+    let s = rect_parts[i].to_owned()
+    let vals = extract_attr_value(s, "height=\"")
+    let mut j = 0
+    while j < vals.length() {
+      heights = heights + [vals[j]]
+      j = j + 1
+    }
+    i = i + 1
+  }
+  heights
+}
+
+///|
+/// 从 SVG 字符串中提取 `<polyline` 元素的 points 中的 x 坐标
+pub fn extract_polyline_xs(svg : String) -> Array[Double] {
+  let pl_parts : Array[StringView] = [ for p in svg.split("<polyline") => p ]
+  let mut xs : Array[Double] = []
+  let mut i = 1
+  while i < pl_parts.length() {
+    let s = pl_parts[i].to_owned()
+    let p_tag = "points=\""
+    let pts_start = svg_find(s, 0, p_tag)
+    if pts_start >= 0 {
+      let val_start = pts_start + p_tag.length()
+      let val_end = svg_find(s, val_start, "\"")
+      if val_end > val_start {
+        let pts_str = s[val_start:val_end].to_owned()
+        // 解析 "x1,y1 x2,y2 ..."
+        let coord_parts : Array[StringView] = [ for p in pts_str.split(" ") => p ]
+        let mut j = 0
+        while j < coord_parts.length() {
+          let coord = coord_parts[j].to_owned()
+          let comma = svg_find(coord, 0, ",")
+          if comma >= 0 {
+            let x_str = coord[:comma].to_owned()
+            xs = xs + [svg_parse_double(x_str)]
+          }
+          j = j + 1
+        }
+      }
+    }
+    i = i + 1
+  }
+  xs
+}
+
+///|
+/// 从 SVG 字符串中提取 `<rect` 元素的 x 坐标
+pub fn extract_rect_xs(svg : String) -> Array[Double] {
+  let rect_parts : Array[StringView] = [ for p in svg.split("<rect") => p ]
+  let mut xs : Array[Double] = []
+  let mut i = 1
+  while i < rect_parts.length() {
+    let s = rect_parts[i].to_owned()
+    let vals = extract_attr_value(s, "x=\"")
+    let mut j = 0
+    while j < vals.length() {
+      xs = xs + [vals[j]]
+      j = j + 1
+    }
+    i = i + 1
+  }
+  xs
+}
+
+///|
+/// 从 SVG 字符串中提取 `<svg` 元素的 width 和 height 属性值
+pub fn extract_svg_size(svg : String) -> (Double, Double) {
+  let svg_tag = "<svg"
+  let tag_start = svg_find(svg, 0, svg_tag)
+  if tag_start < 0 {
+    return (0.0, 0.0)
+  }
+  // 从 <svg ...> 部分提取
+  let close_tag = svg_find(svg, tag_start, ">")
+  let section = if close_tag > tag_start {
+    svg[tag_start:close_tag].to_owned()
+  } else {
+    svg[tag_start:tag_start + 200].to_owned()
+  }
+  let ws = extract_attr_value(section, "width=\"")
+  let hs = extract_attr_value(section, "height=\"")
+  let w = if ws.length() > 0 { ws[0] } else { 0.0 }
+  let h = if hs.length() > 0 { hs[0] } else { 0.0 }
+  (w, h)
+}
+
 // ==================== 测试 ====================
 
 ///|

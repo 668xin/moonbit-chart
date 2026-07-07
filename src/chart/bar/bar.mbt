@@ -113,9 +113,9 @@ pub fn BarChart::render(self : BarChart) -> String {
     return render_empty_chart(self.width, self.height, self.theme)
   }
 
-  // 计算Y轴范围
-  let max_val = calc_max_value(self.datasets, self.stacked)
-  let scale = @lib.calc_scale(0.0, max_val, 5)
+  // 计算Y轴范围（含负值）
+  let (min_val, max_val) = calc_data_range(self.datasets, self.stacked)
+  let scale = @lib.calc_scale(min_val, max_val, 5)
   // 计算分类宽度和柱宽
   let cat_width = plot_width / n_cats.to_double()
   let group_width = cat_width * 0.8
@@ -244,13 +244,13 @@ fn render_empty_chart(w : Double, h : Double, theme : @lib.Theme) -> String {
 }
 
 ///|
-/// 计算数据集最大值
-fn calc_max_value(datasets : Array[BarSeries], stacked : Bool) -> Double {
+/// 计算数据集范围 (min, max)
+fn calc_data_range(datasets : Array[BarSeries], stacked : Bool) -> (Double, Double) {
   if datasets.length() == 0 {
-    return 1.0
+    return (0.0, 1.0)
   }
   if stacked {
-    // 堆叠模式：同分类下所有数据求和
+    // 堆叠模式：同分类下所有数据求和，仅支持正值
     let n = datasets[0].values.length()
     let mut max_sum = 0.0
     let mut i = 0
@@ -259,7 +259,10 @@ fn calc_max_value(datasets : Array[BarSeries], stacked : Bool) -> Double {
       let mut j = 0
       while j < datasets.length() {
         if i < datasets[j].values.length() {
-          sum = sum + datasets[j].values[i]
+          let v = datasets[j].values[i]
+          if v > 0.0 {
+            sum = sum + v
+          }
         }
         j = j + 1
       }
@@ -269,18 +272,22 @@ fn calc_max_value(datasets : Array[BarSeries], stacked : Bool) -> Double {
       i = i + 1
     }
     if max_sum <= 0.0 {
-      1.0
+      (0.0, 1.0)
     } else {
-      max_sum
+      (0.0, max_sum)
     }
   } else {
-    // 分组模式：取所有值的最大值
-    let mut max_v = 0.0
+    // 分组模式：取所有值的最小值和最大值
+    let mut min_v = datasets[0].values[0]
+    let mut max_v = datasets[0].values[0]
     let mut i = 0
     while i < datasets.length() {
       let mut j = 0
       while j < datasets[i].values.length() {
         let v = datasets[i].values[j]
+        if v < min_v {
+          min_v = v
+        }
         if v > max_v {
           max_v = v
         }
@@ -288,10 +295,16 @@ fn calc_max_value(datasets : Array[BarSeries], stacked : Bool) -> Double {
       }
       i = i + 1
     }
+    if min_v > 0.0 {
+      min_v = 0.0
+    }
     if max_v <= 0.0 {
-      1.0
+      max_v = 1.0
+    }
+    if max_v - min_v <= 0.0 {
+      (min_v, min_v + 1.0)
     } else {
-      max_v
+      (min_v, max_v)
     }
   }
 }
@@ -350,6 +363,7 @@ fn render_bars(
       }
     } else {
       // 分组模式
+      let baseline_y = @lib.scale_to_y(0.0, scale, plot_top, plot_bottom)
       let mut di = 0
       while di < n_datasets {
         let ds = chart.datasets[di]
@@ -358,24 +372,40 @@ fn render_bars(
         let bar_x = cat_x + di.to_double() * bx
         let bw = if n_datasets == 1 { bar_width } else { bx * 0.9 }
         let gy = @lib.scale_to_y(val, scale, plot_top, plot_bottom)
-        let rect = @lib.SvgRect::new(
-          bar_x,
-          gy,
-          bw,
-          plot_bottom - gy,
-          ds.color,
-          "none",
-          0,
-          0.0,
-          0.0,
-        )
-        elements = elements + [@lib.SvgElement::RectElement(rect)]
+        if val >= 0.0 {
+          let rect = @lib.SvgRect::new(
+            bar_x,
+            gy,
+            bw,
+            baseline_y - gy,
+            ds.color,
+            "none",
+            0,
+            0.0,
+            0.0,
+          )
+          elements = elements + [@lib.SvgElement::RectElement(rect)]
+        } else {
+          let rect = @lib.SvgRect::new(
+            bar_x,
+            baseline_y,
+            bw,
+            gy - baseline_y,
+            ds.color,
+            "none",
+            0,
+            0.0,
+            0.0,
+          )
+          elements = elements + [@lib.SvgElement::RectElement(rect)]
+        }
 
-        // 值标签
-        if chart.show_value_labels && val > 0.0 {
+        // 值标签（正值在上方，负值在下方）
+        if chart.show_value_labels {
+          let label_y = if val >= 0.0 { gy - 4.0 } else { gy + 12.0 }
           let lbl = @lib.SvgText::new(
             bar_x + bw / 2.0,
-            gy - 4.0,
+            label_y,
             val.to_int().to_string(),
             10,
             chart.theme.text_color,
@@ -468,4 +498,79 @@ test "bar_chart_with_title" {
   )
   let c2 = chart.with_title("My Chart")
   assert_eq(c2.title, "My Chart")
+}
+
+// ==================== 回归测试 ====================
+
+///|
+/// 负值柱状图回归测试：验证负值柱不出现负数高度或画布外矩形
+test "bar_chart_negative_values_regression" {
+  let theme = @lib.Theme::new_light()
+  let cats = ["Q1", "Q2", "Q3", "Q4"]
+  let s = BarSeries::new("Profit", [30.0, -15.0, 45.0, -5.0], "#4e79a7")
+  let chart = BarChart::new(500.0, 350.0, cats, [s], theme, false)
+  let svg = chart.render()
+  // 1. SVG 应包含 rect 元素
+  assert_eq(svg.contains("<rect"), true)
+  // 2. height 属性不应出现负号
+  assert_eq(svg.contains("height=\"-"), false)
+  // 3. 所有 rect 的 height 应为正数且在画布范围内
+  let heights = @lib.extract_rect_heights(svg)
+  let mut all_positive = true
+  let mut hi = 0
+  while hi < heights.length() {
+    if heights[hi] <= 0.0 {
+      all_positive = false
+    }
+    hi = hi + 1
+  }
+  assert_eq(all_positive, true)
+  let (w, h) = @lib.extract_svg_size(svg)
+  assert_eq(w, 500.0)
+  assert_eq(h, 350.0)
+}
+
+///|
+/// 分组柱状图负值回归测试
+test "bar_chart_grouped_negative_regression" {
+  let theme = @lib.Theme::new_light()
+  let cats = ["A", "B", "C"]
+  let s1 = BarSeries::new("S1", [10.0, -5.0, 8.0], "#4e79a7")
+  let s2 = BarSeries::new("S2", [-3.0, 7.0, 12.0], "#f28e2b")
+  let chart = BarChart::new(500.0, 350.0, cats, [s1, s2], theme, false)
+  let svg = chart.render()
+  assert_eq(svg.contains("height=\"-"), false)
+  let heights = @lib.extract_rect_heights(svg)
+  let mut ok = true
+  let mut hi = 0
+  while hi < heights.length() {
+    if heights[hi] <= 0.0 {
+      ok = false
+    }
+    hi = hi + 1
+  }
+  assert_eq(ok, true)
+}
+
+///|
+/// 画布边界回归测试：验证所有 rect 的 x 和宽度不超出 SVG 画布
+test "bar_chart_canvas_bounds_regression" {
+  let theme = @lib.Theme::new_light()
+  let cats = ["LongCat", "B", "C"]
+  let s = BarSeries::new("S1", [100.0, 200.0, 50.0], "#4e79a7")
+  let chart = BarChart::new(500.0, 350.0, cats, [s], theme, false)
+  let svg = chart.render()
+  let (w, h) = @lib.extract_svg_size(svg)
+  let xs = @lib.extract_rect_xs(svg)
+  if xs.length() > 0 {
+    let mut ok = true
+    let mut i = 0
+    while i < xs.length() {
+      if xs[i] < 0.0 || xs[i] > w {
+        ok = false
+      }
+      i = i + 1
+    }
+    assert_eq(ok, true)
+  }
 }
