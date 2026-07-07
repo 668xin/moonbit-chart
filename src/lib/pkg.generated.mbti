@@ -10,6 +10,14 @@ pub fn default_legend_config() -> LegendConfig
 
 pub fn default_tooltip_config() -> TooltipConfig
 
+pub fn extract_polyline_xs(String) -> Array[Double]
+
+pub fn extract_rect_heights(String) -> Array[Double]
+
+pub fn extract_rect_xs(String) -> Array[Double]
+
+pub fn extract_svg_size(String) -> (Double, Double)
+
 pub fn get_dark_theme() -> Theme
 
 pub fn get_light_theme() -> Theme
