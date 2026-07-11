@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "xinxin/moonbit-chart/demo"
+package "668xin/moonbit-chart/demo"
 
 // Values
 pub fn demo_bar_chart() -> String

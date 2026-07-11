@@ -1,6 +1,6 @@
 import {
   "moonbitlang/core/env",
-  "xinxin/moonbit-chart/src/md",
+  "668xin/moonbit-chart/src/md",
 }
 
 options(

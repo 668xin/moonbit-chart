@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "xinxin/moonbit-chart/src/lib"
+package "668xin/moonbit-chart/src/lib"
 
 // Values
 pub fn calc_scale(Double, Double, Int) -> AxisScale

@@ -1,4 +1,4 @@
-name = "xinxin/moonbit-chart"
+name = "668xin/moonbit-chart"
 
 version = "0.1.0"
 

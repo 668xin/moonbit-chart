@@ -1,4 +1,4 @@
-# xinxin/moonbit-chart
+# 668xin/moonbit-chart
 
 MoonBit 原生可视化图表库，基于 SVG 渲染，支持浅色/深色双主题。可发布到 [mooncakes.io](https://mooncakes.io) 的标准 MoonBit 包。
 

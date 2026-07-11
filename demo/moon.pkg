@@ -1,9 +1,9 @@
 import {
-  "xinxin/moonbit-chart/src/lib",
-  "xinxin/moonbit-chart/src/chart/bar",
-  "xinxin/moonbit-chart/src/chart/line",
-  "xinxin/moonbit-chart/src/chart/pie",
-  "xinxin/moonbit-chart/src/chart/radar",
+  "668xin/moonbit-chart/src/lib",
+  "668xin/moonbit-chart/src/chart/bar",
+  "668xin/moonbit-chart/src/chart/line",
+  "668xin/moonbit-chart/src/chart/pie",
+  "668xin/moonbit-chart/src/chart/radar",
 }
 
 options(

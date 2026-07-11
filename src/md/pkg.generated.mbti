@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "xinxin/moonbit-chart/src/md"
+package "668xin/moonbit-chart/src/md"
 
 // Values
 pub fn parse_markdown_blocks(String) -> Array[MdBlock]
