@@ -83,6 +83,7 @@ pub struct SvgPolygon {
 pub struct SvgGroup {
   elements : Array[SvgElement]
   transform : String
+  tooltip_text : String
 }
 
 /// ---- 元素枚举 ----
@@ -197,7 +198,17 @@ pub fn SvgGroup::new(
   elements : Array[SvgElement],
   transform : String,
 ) -> SvgGroup {
-  { elements, transform }
+  { elements, transform, tooltip_text: "" }
+}
+
+///|
+/// 创建带 tooltip 的分组元素
+pub fn SvgGroup::with_tooltip(
+  elements : Array[SvgElement],
+  transform : String,
+  tooltip_text : String,
+) -> SvgGroup {
+  { elements, transform, tooltip_text }
 }
 
 ///|
@@ -258,6 +269,28 @@ pub fn SvgPath::render(self : SvgPath) -> String {
 }
 
 ///|
+/// HTML/SVG 转义 - 防止注入攻击
+fn escape_svg_text(s : String) -> String {
+  let len = s.length()
+  let mut result = ""
+  let mut i = 0
+  while i < len {
+    let c = s.code_unit_at(i).to_int()
+    if c == 38 { // &
+      result = result + "&amp;"
+    } else if c == 60 { // <
+      result = result + "&lt;"
+    } else if c == 62 { // >
+      result = result + "&gt;"
+    } else {
+      result = result + "\{c.unsafe_to_char()}"
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
 /// 渲染文本元素为 SVG 字符串
 pub fn SvgText::render(self : SvgText) -> String {
   "<text" +
@@ -268,7 +301,7 @@ pub fn SvgText::render(self : SvgText) -> String {
   attr_str("text-anchor", self.text_anchor) +
   attr_str("font-family", self.font_family) +
   ">" +
-  self.content +
+  escape_svg_text(self.content) +
   "</text>"
 }
 
@@ -323,11 +356,17 @@ pub fn SvgGroup::render(self : SvgGroup) -> String {
   let inner = self.elements.fold(init="", fn(a, e) {
     a + render_svg_element(e) + "\n"
   })
-  if self.transform == "" {
-    "<g>\n" + inner + "</g>"
+  let title_tag = if self.tooltip_text != "" {
+    "  <title>" + escape_svg_text(self.tooltip_text) + "</title>\n"
   } else {
-    "<g" + attr_str("transform", self.transform) + ">\n" + inner + "</g>"
+    ""
   }
+  let group_tag_open = if self.transform == "" {
+    "<g>"
+  } else {
+    "<g" + attr_str("transform", self.transform) + ">"
+  }
+  group_tag_open + "\n" + title_tag + inner + "</g>"
 }
 
 ///|
@@ -549,6 +588,25 @@ pub fn extract_svg_size(svg : String) -> (Double, Double) {
   let w = if ws.length() > 0 { ws[0] } else { 0.0 }
   let h = if hs.length() > 0 { hs[0] } else { 0.0 }
   (w, h)
+}
+
+///|
+/// 验证数值是否为合法的有限数（非 NaN/Infinity）
+/// NaN 不满足 v == v，Infinity 满足 v * 2 == v
+pub fn is_valid_number(v : Double) -> Bool {
+  // NaN 检查: NaN != NaN
+  // Infinity 检查: Infinity * 2 == Infinity, 且不等于 0
+  v == v && (v * 2.0 != v || v == 0.0)
+}
+
+///|
+/// 将非法数值（NaN/Infinity）替换为 0.0
+pub fn sanitize_number(v : Double) -> Double {
+  if is_valid_number(v) {
+    v
+  } else {
+    0.0
+  }
 }
 
 // ==================== 测试 ====================

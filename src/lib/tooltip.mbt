@@ -1,5 +1,5 @@
 /// Tooltip 提示框组件
-/// 提供 SVG 悬停提示（<title>）和结构化提示框
+/// 支持 SVG 原生悬浮提示（<title>）和结构化 Tooltip 框
 
 ///|
 /// Tooltip 配置
@@ -26,15 +26,10 @@ pub fn default_tooltip_config() -> TooltipConfig {
 }
 
 ///|
-/// 为 SVG 元素添加 title 悬停提示
-/// 将元素包裹在 <g> 内，添加 <title> 子元素
+/// 为 SVG 元素添加 title 悬浮提示
+/// 将元素包裹在 <g> 内，添加 <title> 子元素以实现浏览器原生悬浮效果
 pub fn with_tooltip(elem : SvgElement, tooltip_text : String) -> SvgElement {
-  let title_elem = SvgText::new(
-    0.0, 0.0, tooltip_text, 0, "none", "start", "sans-serif",
-  )
-  // 使用 <g> 包裹元素 + <title>
-  let children = [elem, TextElement(title_elem)]
-  GroupElement(SvgGroup::new(children, ""))
+  GroupElement(SvgGroup::with_tooltip([elem], "", tooltip_text))
 }
 
 ///|
@@ -122,10 +117,10 @@ test "tooltip_with_title_wraps" {
   let r = SvgRect::new(0.0, 0.0, 10.0, 10.0, "red", "none", 0, 0.0, 0.0)
   let elem = RectElement(r)
   let wrapped = with_tooltip(elem, "Hello")
-  // 验证返回的是 GroupElement
+  // 验证返回的是 GroupElement 且包含 title 标签
   let s = wrapped |> render_svg_element
   assert_eq(s.has_prefix("<g>"), true)
-  assert_eq(s.contains("Hello"), true)
+  assert_eq(s.contains("<title>Hello</title>"), true)
 }
 
 ///|

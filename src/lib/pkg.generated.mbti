@@ -26,6 +26,8 @@ pub fn get_palette_color(Theme, Int) -> String
 
 pub fn hello() -> String
 
+pub fn is_valid_number(Double) -> Bool
+
 pub fn legend_occupied_height(LegendConfig) -> Double
 
 pub fn legend_occupied_width(LegendConfig) -> Double
@@ -51,6 +53,8 @@ pub fn render_x_title(String, Double, Double, Double, String, Int, String) -> Sv
 pub fn render_y_axis(AxisConfig, AxisScale, Double, Double, Double, Double, String) -> Array[SvgElement]
 
 pub fn render_y_labels(AxisScale, Double, Double, Double, String, Int, String) -> Array[SvgElement]
+
+pub fn sanitize_number(Double) -> Double
 
 pub fn scale_to_y(Double, AxisScale, Double, Double) -> Double
 
@@ -111,7 +115,9 @@ pub struct LegendConfig {
   item_height : Double
   marker_size : Double
   padding : Double
+  auto_adapt : Bool
 }
+pub fn LegendConfig::with_auto_adapt(Self) -> Self
 pub fn LegendConfig::with_font(Self, String, Int) -> Self
 pub fn LegendConfig::with_left_position(Self) -> Self
 pub fn LegendConfig::with_right_position(Self) -> Self
@@ -180,9 +186,11 @@ pub(all) enum SvgElement {
 pub struct SvgGroup {
   elements : Array[SvgElement]
   transform : String
+  tooltip_text : String
 }
 pub fn SvgGroup::new(Array[SvgElement], String) -> Self
 pub fn SvgGroup::render(Self) -> String
+pub fn SvgGroup::with_tooltip(Array[SvgElement], String, String) -> Self
 
 pub struct SvgLine {
   x1 : Double

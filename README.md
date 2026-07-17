@@ -13,14 +13,14 @@ src/
 │   ├── color     #  颜色工具（r/g/b/a + to_css）
 │   ├── geometry  #  几何结构体（Point/Rect）
 │   ├── axis      #  坐标轴配置（刻度计算、Y轴映射）
-│   ├── legend    #  图例组件（4 种位置：bottom/top/left/right）
-│   └── tooltip   #  提示框组件
+│   ├── legend    #  图例组件（4 种位置，支持自动自适应）
+│   └── tooltip   #  悬浮 Tooltip 组件（SVG <title>）
 ├── chart/        # 图表组件层
-│   ├── bar       #  柱状图（单组/分组/堆叠、负值支持）
-│   ├── line      #  折线图（单组/多组、数据点标记）
-│   ├── pie       #  饼图（扇形计算、百分比标签）
-│   └── radar     #  雷达图（多边形网格、多组叠加）
-├── cli/          # 命令行工具（MD → HTML）
+│   ├── bar       #  柱状图（单组/分组/堆叠、负值支持、Tooltip）
+│   ├── line      #  折线图（单组/多组、数据点标记、Tooltip）
+│   ├── pie       #  饼图（扇形计算、百分比标签、Tooltip）
+│   └── radar     #  雷达图（多边形网格、多组叠加、Tooltip）
+├── cli/          # 命令行工具（参数化、批量、SVG 导出）
 └── md/           # Markdown 转换器
     ├── md_parser     #  图表块解析
     ├── md_renderer   #  内联渲染（粗体/斜体/代码/链接）
@@ -37,7 +37,7 @@ demo/           # 可运行 Demo（18 个示例）
   └── demo_edge_cases.mbt   # 暗色主题 / 负值 / 大数据 / 空数据
 
 scripts/        # 辅助脚本（PowerShell 包装）
-  └── moonbit-chart.ps1     # MD 文件 → HTML 页面
+  └── moonbit-chart.ps1     # MD 文件 → HTML/SVG 页面
 ```
 
 ## 快速上手
@@ -65,7 +65,7 @@ cd moonbit-chart
 # 构建所有模块
 moon build
 
-# 运行全部测试（80 个用例）
+# 运行全部测试（91 个用例，覆盖核心路径 + 边界 + 安全）
 moon test
 
 # 运行 Demo
@@ -74,16 +74,38 @@ moon run demo
 
 ### 命令行工具
 
-将 Markdown 文件（含图表配置块）转换为完整 HTML 可视化页面：
+将 Markdown 文件（含图表配置块）转换为完整 HTML 可视化页面或导出 SVG：
 
 ```powershell
-# PowerShell 包装脚本
+# 基本用法（MD → HTML）
 .\scripts\moonbit-chart.ps1 charts.md report.html
 
-# 或直接用 moonrun
-$content = Get-Content -Raw charts.md
-moonrun _build/wasm-gc/debug/build/src/cli/cli.wasm $content > output.html
+# 导出 SVG 文件
+.\scripts\moonbit-chart.ps1 charts.md output.svg -Format svg
+
+# 深色主题
+.\scripts\moonbit-chart.ps1 charts.md report.html -Theme dark
+
+# 自定义页面标题
+.\scripts\moonbit-chart.ps1 charts.md report.html -Title 'Sales Report'
+
+# 直接在 CLI 使用（无需包装脚本）
+moon run src/cli -- "@chart: bar\n  categories: A, B\n  dataset: S1, red, 10, 20\n@end"
+
+# SVG 导出模式
+moon run src/cli -- --format svg "@chart: pie\n  dataset: A, red, 30\n@end"
 ```
+
+CLI 支持参数：
+
+| 参数 | 说明 |
+|------|------|
+| `--format html\|svg` | 输出格式，默认 html |
+| `--theme light\|dark` | 图表主题 |
+| `--title <text>` | HTML 页面标题 |
+| `--output <file>` | 输出文件路径 |
+| `--batch` | 批量处理模式 |
+| `--help, -h` | 显示帮助 |
 
 ## 图表配置语法
 
@@ -114,6 +136,24 @@ dataset: Product B, #F28E2B, 90, 140, 200, 160, 120, 210
 | `categories` | 是 | X轴标签，逗号分隔 |
 | `dataset` | 是 | 数据系列：`标签, 颜色, 数值...` |
 
+## 核心特性
+
+### 悬浮 Tooltip
+
+所有图表元素均支持浏览器原生悬浮提示（SVG `<title>`）：
+
+- **柱状图**：悬停显示系列名 + 数值 + 分类
+- **折线图**：悬停显示系列名 + 数值
+- **饼图**：悬停显示标签 + 数值 + 百分比
+- **雷达图**：悬停显示系列名 + 分类 + 数值
+
+### 图例自适应
+
+图例组件支持自动自适应：
+- 自动计算宽度（基于最长标签文字）
+- 空间不足时自动缩小字体（最小 8px）
+- 长文本自动截断显示 ".."
+
 ## API 参考
 
 ### 底层绘图基座
@@ -137,6 +177,10 @@ let css = c.to_css()  // "rgba(255,0,0,1.0)"
 let config = @lib.AxisConfig::new()
   .with_max(300.0)
   .with_tick_count(5)
+
+// Tooltip 悬浮提示
+let elem = @lib.SvgRect::new(0.0, 0.0, 100.0, 50.0, "red", "none", 0, 0.0, 0.0)
+let with_tt = @lib.with_tooltip(@lib.SvgElement::RectElement(elem), "Value: 100")
 ```
 
 ### 图表组件
@@ -174,7 +218,7 @@ moon run demo
 
 包括：单组/分组/堆叠柱状图、单组/多组折线图、饼图、雷达图，以及暗色主题、负值、大数据量、空数据等边界示例。
 
-## 两种输出产物
+## 三种输出产物
 
 ### SVG 字符串
 
@@ -188,11 +232,29 @@ moon run demo
 .\scripts\moonbit-chart.ps1 charts.md report.html
 ```
 
+### 纯 SVG 文件导出
+
+使用 `--format svg` 参数直接导出 SVG：
+
+```powershell
+.\scripts\moonbit-chart.ps1 charts.md output.svg -Format svg
+```
+
+## 边界兼容与安全
+
+- **空数据**：无数据时显示空白图表标题
+- **负值**：柱状图自动处理负值（反向绘制），折线图支持负值 Y 轴
+- **非法数据**：NaN/Infinity 自动替换为 0.0，防止崩溃
+- **超大数值**：坐标轴自动缩放
+- **多组堆叠**：支持多组数据堆叠柱状图
+- **暗色主题**：全部图表支持 `Theme::new_dark()`
+- **安全防护**：SVG 文本内容自动转义（防 HTML/SVG 注入攻击）
+
 ## 发布到 mooncakes.io
 
 ```bash
 moon build       # 构建检查
-moon test        # 运行 80 个测试
+moon test        # 运行 91 个测试
 moon login       # 登录 mooncakes.io
 moon publish     # 发布
 ```
@@ -204,14 +266,6 @@ GitHub Actions 流水线（`.github/workflows/ci.yml`），每次推送自动执
 - `moon check` + `moon fmt --check` + `moon info`
 - `moon build`
 - `moon test`
-
-## 边界兼容
-
-- **空数据**：无数据时显示空白图表标题
-- **负值**：柱状图自动处理负值（反向绘制）
-- **超大数据**：坐标轴自动缩放
-- **多组堆叠**：支持多组数据堆叠柱状图
-- **暗色主题**：全部图表支持 `Theme::new_dark()`
 
 ## 许可证
 

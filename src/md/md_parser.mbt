@@ -278,7 +278,9 @@ fn parse_double_parts(s : String, default : Double) -> Double {
   if !has_digit {
     return default
   }
-  sign * (int_part + frac_part / frac_div)
+  let result = sign * (int_part + frac_part / frac_div)
+  // 应用 NaN/Infinity 安全检查
+  @lib.sanitize_number(result)
 }
 
 // ==================== 测试 ====================

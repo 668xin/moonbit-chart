@@ -266,14 +266,14 @@ fn render_radar_axes(
 }
 
 ///|
-/// 计算数据点的最大范围（用于归一化）
+/// 计算数据点的最大范围（用于归一化，带数据净化）
 fn calc_radar_max(chart : RadarChart) -> Double {
   let mut max_v = 0.0
   let mut di = 0
   while di < chart.datasets.length() {
     let mut vi = 0
     while vi < chart.datasets[di].values.length() {
-      let v = chart.datasets[di].values[vi]
+      let v = @lib.sanitize_number(chart.datasets[di].values[vi])
       if v > max_v {
         max_v = v
       }
@@ -321,12 +321,26 @@ fn render_radar_data(
     let poly = @lib.SvgPolygon::new(pts, fill_color, ds.color, 2)
     elements = elements + [@lib.SvgElement::PolygonElement(poly)]
 
-    // 数据点标记
+    // 数据点标记（带悬浮 Tooltip）
     let mut pi = 0
     while pi < pts.length() {
       let (px, py) = pts[pi]
-      let dot = @lib.SvgCircle::new(px, py, 3.0, ds.color, "white", 1)
-      elements = elements + [@lib.SvgElement::CircleElement(dot)]
+      let dot_elem = @lib.SvgElement::CircleElement(
+        @lib.SvgCircle::new(px, py, 3.0, ds.color, "white", 1),
+      )
+      // 添加悬浮 Tooltip
+      let cat_label = if pi < chart.categories.length() {
+        chart.categories[pi]
+      } else {
+        ""
+      }
+      let val = if pi < ds.values.length() { ds.values[pi] } else { 0.0 }
+      let tt_text = ds.label +
+        " - " +
+        cat_label +
+        ": " +
+        val.to_int().to_string()
+      elements = elements + [@lib.with_tooltip(dot_elem, tt_text)]
       pi = pi + 1
     }
 

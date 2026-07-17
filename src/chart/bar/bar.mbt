@@ -252,17 +252,21 @@ fn calc_data_range(
   if datasets.length() == 0 {
     return (0.0, 1.0)
   }
+  // 数据净化：将所有数据集中的 NaN/Infinity 替换为 0
+  let cleaned = datasets.map(fn(ds) {
+    BarSeries::new(ds.label, ds.values.map(@lib.sanitize_number), ds.color)
+  })
   if stacked {
     // 堆叠模式：同分类下所有数据求和，仅支持正值
-    let n = datasets[0].values.length()
+    let n = cleaned[0].values.length()
     let mut max_sum = 0.0
     let mut i = 0
     while i < n {
       let mut sum = 0.0
       let mut j = 0
-      while j < datasets.length() {
-        if i < datasets[j].values.length() {
-          let v = datasets[j].values[i]
+      while j < cleaned.length() {
+        if i < cleaned[j].values.length() {
+          let v = cleaned[j].values[i]
           if v > 0.0 {
             sum = sum + v
           }
@@ -281,13 +285,13 @@ fn calc_data_range(
     }
   } else {
     // 分组模式：取所有值的最小值和最大值
-    let mut min_v = datasets[0].values[0]
-    let mut max_v = datasets[0].values[0]
+    let mut min_v = cleaned[0].values[0]
+    let mut max_v = cleaned[0].values[0]
     let mut i = 0
-    while i < datasets.length() {
+    while i < cleaned.length() {
       let mut j = 0
-      while j < datasets[i].values.length() {
-        let v = datasets[i].values[j]
+      while j < cleaned[i].values.length() {
+        let v = cleaned[i].values[j]
         if v < min_v {
           min_v = v
         }
@@ -332,6 +336,11 @@ fn render_bars(
   let mut ci = 0
   while ci < n_cats {
     let cat_x = plot_left + ci.to_double() * cat_width + group_offset
+    let cat_label = if ci < chart.categories.length() {
+      chart.categories[ci]
+    } else {
+      ""
+    }
 
     if chart.stacked {
       // 堆叠模式
@@ -348,18 +357,27 @@ fn render_bars(
             plot_top,
             plot_bottom,
           )
-          let rect = @lib.SvgRect::new(
-            cat_x,
-            y1,
-            bar_width,
-            y0 - y1,
-            ds.color,
-            "none",
-            0,
-            0.0,
-            0.0,
+          let rect_elem = @lib.SvgElement::RectElement(
+            @lib.SvgRect::new(
+              cat_x,
+              y1,
+              bar_width,
+              y0 - y1,
+              ds.color,
+              "none",
+              0,
+              0.0,
+              0.0,
+            ),
           )
-          elements = elements + [@lib.SvgElement::RectElement(rect)]
+          // 添加悬浮 Tooltip
+          let tt_text = ds.label +
+            ": " +
+            val.to_int().to_string() +
+            " (" +
+            cat_label +
+            ")"
+          elements = elements + [@lib.with_tooltip(rect_elem, tt_text)]
           stack_bottom = stack_bottom + val
         }
         di = di + 1
@@ -375,8 +393,8 @@ fn render_bars(
         let bar_x = cat_x + di.to_double() * bx
         let bw = if n_datasets == 1 { bar_width } else { bx * 0.9 }
         let gy = @lib.scale_to_y(val, scale, plot_top, plot_bottom)
-        if val >= 0.0 {
-          let rect = @lib.SvgRect::new(
+        let rect = if val >= 0.0 {
+          @lib.SvgRect::new(
             bar_x,
             gy,
             bw,
@@ -387,9 +405,8 @@ fn render_bars(
             0.0,
             0.0,
           )
-          elements = elements + [@lib.SvgElement::RectElement(rect)]
         } else {
-          let rect = @lib.SvgRect::new(
+          @lib.SvgRect::new(
             bar_x,
             baseline_y,
             bw,
@@ -400,8 +417,16 @@ fn render_bars(
             0.0,
             0.0,
           )
-          elements = elements + [@lib.SvgElement::RectElement(rect)]
         }
+        let rect_elem = @lib.SvgElement::RectElement(rect)
+        // 添加悬浮 Tooltip
+        let tt_text = ds.label +
+          ": " +
+          val.to_int().to_string() +
+          " (" +
+          cat_label +
+          ")"
+        elements = elements + [@lib.with_tooltip(rect_elem, tt_text)]
 
         // 值标签（正值在上方，负值在下方）
         if chart.show_value_labels {

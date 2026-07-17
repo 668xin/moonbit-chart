@@ -147,12 +147,12 @@ pub fn PieChart::render(self : PieChart) -> String {
 }
 
 ///|
-/// 计算数据项总和
+/// 计算数据项总和（带数据净化）
 fn sum_values(data : Array[PieSlice]) -> Double {
   let mut s = 0.0
   let mut i = 0
   while i < data.length() {
-    s = s + data[i].value
+    s = s + @lib.sanitize_number(data[i].value)
     i = i + 1
   }
   s
@@ -195,7 +195,7 @@ fn arc_path(
 }
 
 ///|
-/// 渲染饼图扇形
+/// 渲染饼图扇形（带悬浮 Tooltip）
 fn render_pie_slices(
   chart : PieChart,
   cx : Double,
@@ -212,7 +212,16 @@ fn render_pie_slices(
     let end_angle = start_angle + sweep
     let path_data = arc_path(cx, cy, r, start_angle, end_angle)
     let path = @lib.SvgPath::new(path_data, slice.color, "white", 1)
-    elements = elements + [@lib.SvgElement::PathElement(path)]
+    let path_elem = @lib.SvgElement::PathElement(path)
+    // 添加悬浮 Tooltip
+    let pct = (slice.value / total * 100.0).to_int()
+    let tt_text = slice.label +
+      ": " +
+      slice.value.to_int().to_string() +
+      " (" +
+      pct.to_string() +
+      "%)"
+    elements = elements + [@lib.with_tooltip(path_elem, tt_text)]
     start_angle = end_angle
     i = i + 1
   }

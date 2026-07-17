@@ -6,6 +6,7 @@ package "668xin/moonbit-chart/src/cli"
 // Errors
 
 // Types and methods
+type ParsedArgs
 
 // Type aliases
 

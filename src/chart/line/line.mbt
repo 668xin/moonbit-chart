@@ -125,9 +125,9 @@ pub fn LineChart::render(self : LineChart) -> String {
 
   // 计算 X 范围（取索引作为分类值）- 基于最多点的数据集
   let max_pts = find_max_points(self.datasets)
-  // 计算 Y 范围
-  let (_y_min, y_max) = find_y_range(all_pts)
-  let y_scale = @lib.calc_scale(0.0, y_max, 5)
+  // 计算 Y 范围（含负值）
+  let (y_min, y_max) = find_y_range(all_pts)
+  let y_scale = @lib.calc_scale(y_min, y_max, 5)
 
   let mut elements : Array[@lib.SvgElement] = []
 
@@ -232,12 +232,17 @@ pub fn LineChart::render(self : LineChart) -> String {
 }
 
 ///|
-/// 收集所有数据点
+/// 收集所有数据点（带数据净化）
 fn collect_all_points(datasets : Array[LineSeries]) -> Array[DataPoint] {
   let mut all : Array[DataPoint] = []
   let mut i = 0
   while i < datasets.length() {
-    all = all + datasets[i].points
+    let mut j = 0
+    while j < datasets[i].points.length() {
+      let p = datasets[i].points[j]
+      all = all + [DataPoint::new(p.x, @lib.sanitize_number(p.y))]
+      j = j + 1
+    }
     i = i + 1
   }
   all
@@ -367,20 +372,18 @@ fn render_lines(
     let polyline = @lib.SvgPolyline::new(mapped_pts, "none", ds.color, 2)
     elements = elements + [@lib.SvgElement::PolylineElement(polyline)]
 
-    // 渲染数据点
+    // 渲染数据点（带悬浮 Tooltip）
     if chart.show_points {
       let mut pi = 0
       while pi < mapped_pts.length() {
         let (cx, cy) = mapped_pts[pi]
-        let circle = @lib.SvgCircle::new(
-          cx,
-          cy,
-          chart.point_radius,
-          ds.color,
-          "white",
-          2,
+        let circle = @lib.SvgElement::CircleElement(
+          @lib.SvgCircle::new(cx, cy, chart.point_radius, ds.color, "white", 2),
         )
-        elements = elements + [@lib.SvgElement::CircleElement(circle)]
+        // 添加悬浮 Tooltip
+        let val = if pi < pts.length() { pts[pi].y } else { 0.0 }
+        let tt_text = ds.label + ": " + val.to_int().to_string()
+        elements = elements + [@lib.with_tooltip(circle, tt_text)]
         pi = pi + 1
       }
     }
