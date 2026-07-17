@@ -1,6 +1,6 @@
 name = "668xin/moonbit-chart"
 
-version = "0.1.0"
+version = "0.2.0"
 
 description = "A native MoonBit SVG chart library with light/dark theme, CLI tool and Markdown to HTML converter"
 
