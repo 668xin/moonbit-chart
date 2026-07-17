@@ -20,14 +20,17 @@ jobs:
       - name: MoonBit Version
         run: moon version --all
 
+      - name: Regenerate .mbti files
+        run: moon info
+
+      - name: Format all files
+        run: moon fmt
+
+      - name: Check for uncommitted changes (.mbti or formatting)
+        run: git diff --exit-code
+
       - name: Moon Check
         run: moon check
-
-      - name: Moon Format Check
-        run: moon fmt --check
-
-      - name: Moon Info
-        run: moon info
 
   build:
     runs-on: ubuntu-latest
